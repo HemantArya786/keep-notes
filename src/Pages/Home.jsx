@@ -5,13 +5,16 @@ import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 function Home({ allNotes, setAllNotes }) {
+  const [showInput, setShowInput] = useState(false);
   const [title, setTitle] = useState("");
   const [editTitleId, setEditTitleId] = useState("");
   const [editTitle, setEditTitle] = useState("");
-
+  const [content, setContent] = useState([""]);
+  const [editContent, setEditContent] = useState([""]);
   const [searchResult, setSearchResult] = useState([]);
-
   const [searchValue, setSearchValue] = useState("");
+  const [updateDate, setUpdateDate] = useState("");
+  console.log(allNotes);
 
   useEffect(() => {
     let retrievedArrayString = localStorage.getItem("allNotes");
@@ -25,10 +28,13 @@ function Home({ allNotes, setAllNotes }) {
   }, []);
 
   const addTodo = () => {
+    setShowInput(!showInput);
     let newItem = {
       id: uuidv4(),
       title: title,
-      contant: [],
+      contant: [content],
+      Createdate: new Date(),
+      lastUpdate: updateDate,
     };
 
     setAllNotes([newItem, ...allNotes]);
@@ -37,6 +43,7 @@ function Home({ allNotes, setAllNotes }) {
     localStorage.setItem("allNotes", myArrayString);
 
     setTitle("");
+    setContent("");
   };
 
   const deleteTodo = (id) => {
@@ -47,9 +54,11 @@ function Home({ allNotes, setAllNotes }) {
     localStorage.setItem("allNotes", JSON.stringify(newData));
   };
 
-  const editTodo = (id, name) => {
+  const editTodo = (id, name, content) => {
     setEditTitleId(id);
     setEditTitle(name);
+    setEditContent([content]);
+    setUpdateDate(new Date());
   };
 
   const updateTitle = () => {
@@ -61,7 +70,14 @@ function Home({ allNotes, setAllNotes }) {
 
     let findItem = allNotes.find((item) => item.id === editTitleId);
 
-    let updateItem = { ...findItem, title: editTitle };
+    let updateItem = {
+      ...findItem,
+      title: editTitle,
+      contant: [editContent],
+      lastUpdate: updateDate,
+    };
+
+    console.log(updateItem, "updated item ");
 
     let newArray = allNotes.map((item) => {
       if (item.id === editTitleId) {
@@ -74,6 +90,7 @@ function Home({ allNotes, setAllNotes }) {
     setAllNotes(newArray);
     setEditTitleId("");
     setEditTitle("");
+    setEditContent("");
     localStorage.setItem("allNotes", JSON.stringify(newArray));
   };
 
@@ -89,6 +106,10 @@ function Home({ allNotes, setAllNotes }) {
 
   const handleEditTitleChange = (e) => {
     setEditTitle(e.target.value);
+  };
+
+  const handleEditContentChange = (e) => {
+    setEditContent(e.target.value);
   };
 
   return (
@@ -147,44 +168,151 @@ function Home({ allNotes, setAllNotes }) {
       ))}
 
       {searchResult.length === 0 && (
-        <section>
+        <section
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            borderBottom: "2px solid black",
+            marginTop: 10,
+          }}
+        >
           {/* add todo input with add button */}
-          <div>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onKeyUp={(e) => {
-                if (e.key === "Enter") {
-                  addTodo();
-                }
+          <div
+            style={{
+              display: "flex",
+
+              border: "2px solid black",
+            }}
+          >
+            {showInput && (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <input
+                  style={{ width: 515, height: 40, fontSize: 18 }}
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onKeyUp={(e) => {
+                    if (e.key === "Enter") {
+                      addTodo();
+                    }
+                  }}
+                />
+                <textarea
+                  style={{ width: 500, height: 100, fontSize: 15, padding: 10 }}
+                  onChange={(e) => setContent(e.target.value)}
+                  onKeyUp={(e) => {
+                    if (e.key === "Enter") {
+                      addTodo();
+                    }
+                  }}
+                />
+              </div>
+            )}
+
+            <button
+              style={{
+                height: 55,
+                width: 600,
+                borderRadius: 20,
+                fontSize: 18,
+                border: "none",
               }}
-            />
-            <button onClick={addTodo}>add Title</button>
+              onClick={addTodo}
+            >
+              <p>Take a Note </p>
+              {showInput ? "Hide Input" : "Show Input"}
+            </button>
           </div>
 
           {/* allNotes mapping with edit and delete functionality */}
           {allNotes.map((note) => {
             return (
-              <div style={{ display: "flex" }} key={note.id}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  width: 600,
+                  height: 400,
+
+                  border: "2px solid green",
+                }}
+                key={note.id}
+              >
                 {note.id === editTitleId ? (
-                  <input
-                    type="text"
-                    onKeyUp={(e) => {
-                      if (e.key === "Enter") {
-                        updateTitle();
-                      }
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
                     }}
-                    value={editTitle}
-                    onChange={handleEditTitleChange}
-                  />
+                  >
+                    <input
+                      type="text"
+                      onKeyUp={(e) => {
+                        if (e.key === "Enter") {
+                          updateTitle();
+                        }
+                      }}
+                      value={editTitle}
+                      onChange={handleEditTitleChange}
+                    />
+                    <input
+                      type="text"
+                      value={editContent}
+                      onChange={handleEditContentChange}
+                      style={{ width: "500px" }}
+                      onKeyUp={(e) => {
+                        if (e.key === "Enter") {
+                          updateTitle();
+                        }
+                      }}
+                    />
+                  </div>
                 ) : (
-                  <p onClick={() => handleClick(note.id)}>{note.title}</p>
+                  <div style={{ border: "2px solid black", width: 600 }}>
+                    <p
+                      style={{
+                        width: 600,
+                        height: 50,
+                        border: "2px solid red",
+                      }}
+                      onClick={() => handleClick(note.id)}
+                    >
+                      {note.title}
+                    </p>
+                    <p
+                      style={{
+                        height: 200,
+                        width: 600,
+                        border: "2px solid red",
+                        fontSize: 18,
+                      }}
+                    >
+                      {note.contant}
+                    </p>
+                  </div>
                 )}
-                <button onClick={() => deleteTodo(note.id)}>delete</button>
-                <button onClick={() => editTodo(note.id, note.title)}>
-                  Edit Title
-                </button>
+                <div
+                  style={{
+                    display: "flex",
+                    border: "2px solid black",
+                    width: "full",
+                  }}
+                >
+                  <button
+                    style={{ width: 100 }}
+                    onClick={() => deleteTodo(note.id)}
+                  >
+                    delete
+                  </button>
+                  <button
+                    style={{ width: 100 }}
+                    onClick={() => editTodo(note.id, note.title, note.content)}
+                  >
+                    Edit
+                  </button>
+                </div>
               </div>
             );
           })}

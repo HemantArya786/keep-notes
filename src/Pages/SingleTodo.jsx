@@ -3,13 +3,16 @@ import { useParams } from "react-router-dom";
 
 function SingleTodo({ allNotes, setAllNotes }) {
   let { todoId } = useParams();
-  const [addContent, setAddContent] = useState("");
+  // const [addContent, setAddContent] = useState("");
   let retrievedArrayString = localStorage.getItem("allNotes");
 
   let searchallNotes = JSON.parse(retrievedArrayString);
 
   let data = searchallNotes.find((item) => item.id === todoId);
 
+  console.log(data);
+
+  // console.log(data, "yeh data dekho");
   //   console.log(data);
 
   //   searchallNotes.filter(())
@@ -19,14 +22,15 @@ function SingleTodo({ allNotes, setAllNotes }) {
   // map content from that note filtered
 
   return (
-    <div>
+    <div style={{ border: "2px solid black" }}>
+      <p>created Date : {data.Createdate}</p>
       <p>{data.title}</p>
-      {data?.content?.map((item) => (
-        <div key={useParams}>
-          <p>{item.data}</p>
-          <input onChange={(e) => setAddContent(e.target.value)} />
+      {data?.contant?.map((item, idx) => (
+        <div key={idx}>
+          <p>{item}</p>
         </div>
       ))}
+      <p>last Modification date : {data.lastUpdate}</p>
     </div>
   );
 }
