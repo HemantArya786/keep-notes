@@ -1,323 +1,224 @@
-// eslint.config.js
-import { useNavigate } from "react-router-dom";
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Modal from "react-modal";
 import { v4 as uuidv4 } from "uuid";
 
-function Home({ allNotes, setAllNotes }) {
-  const [showInput, setShowInput] = useState(false);
-  const [title, setTitle] = useState("");
-  const [editTitleId, setEditTitleId] = useState("");
-  const [editTitle, setEditTitle] = useState("");
-  const [content, setContent] = useState([""]);
-  const [editContent, setEditContent] = useState([""]);
-  const [searchResult, setSearchResult] = useState([]);
-  const [searchValue, setSearchValue] = useState("");
-  const [updateDate, setUpdateDate] = useState("");
+const customStyles = {
+  content: {
+    top: "35%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "#d2d4d6",
+    borderRadius: 10,
+  },
+};
+function Home() {
+  const [allNotes, setAllNotes] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [notesEditId, setNotesEditId] = useState("");
+  const [currentTitle, setCurrentTitle] = useState("");
+  const [currentContent, setCurrentContent] = useState("");
+  const [isEdited, setIsEdited] = useState(false);
+
   console.log(allNotes);
 
-  useEffect(() => {
-    let retrievedArrayString = localStorage.getItem("allNotes");
-    let localAllNotes = retrievedArrayString
-      ? JSON.parse(retrievedArrayString)
-      : [];
-
-    if (localAllNotes.length > 0) {
-      setAllNotes(localAllNotes);
-    }
-  }, []);
-
-  const addTodo = () => {
-    setShowInput(!showInput);
-    let newItem = {
+  const addvalue = () => {
+    let newNotes = {
       id: uuidv4(),
-      title: title,
-      contant: [content],
-      Createdate: new Date(),
-      lastUpdate: updateDate,
+      title: currentTitle,
+      content: currentContent,
+      createDate: new Date(),
     };
 
-    setAllNotes([newItem, ...allNotes]);
+    setCurrentContent("");
+    setCurrentTitle("");
 
-    let myArrayString = JSON.stringify([newItem, ...allNotes]);
-    localStorage.setItem("allNotes", myArrayString);
-
-    setTitle("");
-    setContent("");
+    setAllNotes([newNotes, ...allNotes]);
+    localStorage.setItem("data", JSON.stringify(allNotes));
+    setShowAddModal(false);
   };
 
-  const deleteTodo = (id) => {
-    const newData = allNotes.filter((item) => item.id !== id);
-
-    setAllNotes(newData);
-
-    localStorage.setItem("allNotes", JSON.stringify(newData));
+  const createNote = () => {
+    setShowAddModal(true);
   };
 
-  const editTodo = (id, name, content) => {
-    setEditTitleId(id);
-    setEditTitle(name);
-    setEditContent([content]);
-    setUpdateDate(new Date());
+  const deleteNote = (id) => {
+    let afterDeleteNotesList = allNotes.filter((item) => item.id !== id);
+
+    setAllNotes(afterDeleteNotesList);
+
+    console.log(afterDeleteNotesList);
   };
 
-  const updateTitle = () => {
-    // id and title need to set in state
-    // find item with similar id in array
-    // update the item's title and keep other data as it is
-    //replace the title and return array
-    // restating all the state
+  const editRequested = (id) => {
+    let foundedNotes = allNotes.find((item) => item.id === id);
+    console.log(foundedNotes, "update");
+    setCurrentContent(foundedNotes.content);
+    setCurrentTitle(foundedNotes.title);
+    setNotesEditId(foundedNotes.id);
+    setShowAddModal(true);
+    setIsEdited(true);
+  };
 
-    let findItem = allNotes.find((item) => item.id === editTitleId);
-
-    let updateItem = {
-      ...findItem,
-      title: editTitle,
-      contant: [editContent],
-      lastUpdate: updateDate,
+  const editNote = () => {
+    let updateNote = {
+      title: currentTitle,
+      content: currentContent,
+      modifiedDate: new Date(),
+      id: notesEditId,
     };
 
-    console.log(updateItem, "updated item ");
-
-    let newArray = allNotes.map((item) => {
-      if (item.id === editTitleId) {
-        return updateItem;
+    let modifiedNote = allNotes.map((item) => {
+      if (item.id === notesEditId) {
+        item = updateNote;
       }
-
       return item;
     });
 
-    setAllNotes(newArray);
-    setEditTitleId("");
-    setEditTitle("");
-    setEditContent("");
-    localStorage.setItem("allNotes", JSON.stringify(newArray));
-  };
-
-  const navigate = useNavigate();
-  const handleClick = (id) => {
-    navigate(`/${id}`);
-  };
-
-  const findTitle = () => {
-    let findData = allNotes.filter((item) => item.title.includes(searchValue));
-    setSearchResult(findData);
-  };
-
-  const handleEditTitleChange = (e) => {
-    setEditTitle(e.target.value);
-  };
-
-  const handleEditContentChange = (e) => {
-    setEditContent(e.target.value);
+    setAllNotes(modifiedNote);
+    setIsEdited("");
+    setCurrentTitle("");
+    setCurrentContent("");
+    setShowAddModal(false);
   };
 
   return (
-    <main>
-      {/* search input with search button */}
-      <section
+    <main style={{ fontFamily: "poppins" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          borderBottom: "1px solid grey",
+        }}
+      >
+        <div style={{ width: "20%" }}>
+          <h1>Keeps Notes</h1>
+        </div>
+        <div style={{ width: "80%" }}>
+          <input
+            style={{
+              width: 800,
+              height: 40,
+              fontSize: 28,
+              borderRadius: 10,
+              border: "none",
+              color: "black",
+              backgroundColor: "#d2d4d6",
+            }}
+            placeholder="   search"
+          />
+        </div>
+      </div>
+      <div
         style={{
           display: "flex",
           justifyContent: "center",
-          borderBottom: "2px solid black",
-          marginTop: 10,
+          marginTop: 50,
         }}
       >
-        <div>
-          <input
-            style={{
-              height: 50,
-              width: 600,
-              fontSize: 18,
-
-              borderTopLeftRadius: 50,
-              borderBottomLeftRadius: 50,
-            }}
-            value={searchValue}
-            placeholder="       search "
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyUp={(e) => {
-              if (e.key === "Enter") {
-                findTitle();
-              }
-            }}
-          />
-        </div>
-        <div>
-          <button
-            style={{
-              height: 55,
-              width: 120,
-              fontSize: 18,
-              border: "none",
-              borderTopRightRadius: 50,
-              borderBottomRightRadius: 50,
-            }}
-            onClick={() => findTitle()}
-          >
-            search
-          </button>
-        </div>
-      </section>
-
-      {/* search results mapping */}
-      {searchResult.map((item) => (
-        <p onClick={() => handleClick(item.id)} key={item.id}>
-          {item.title}
-        </p>
-      ))}
-
-      {searchResult.length === 0 && (
-        <section
+        <button
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            borderBottom: "2px solid black",
-            marginTop: 10,
+            padding: 20,
+            border: "none",
+            fontSize: 18,
+            width: 500,
+            borderRadius: 10,
+            backgroundColor: "#d2d4d6",
           }}
+          onClick={() => createNote()}
         >
-          {/* add todo input with add button */}
+          Take a Note....
+        </button>
+      </div>
+      <section style={{}}>
+        <Modal
+          isOpen={showAddModal}
+          onRequestClose={() => setShowAddModal(false)}
+          style={customStyles}
+        >
           <div
             style={{
+              width: "600px",
               display: "flex",
-
-              border: "2px solid black",
+              flexDirection: "column",
             }}
           >
-            {showInput && (
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <input
-                  style={{ width: 515, height: 40, fontSize: 18 }}
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onKeyUp={(e) => {
-                    if (e.key === "Enter") {
-                      addTodo();
-                    }
-                  }}
-                />
-                <textarea
-                  style={{ width: 500, height: 100, fontSize: 15, padding: 10 }}
-                  onChange={(e) => setContent(e.target.value)}
-                  onKeyUp={(e) => {
-                    if (e.key === "Enter") {
-                      addTodo();
-                    }
-                  }}
-                />
-              </div>
-            )}
-
-            <button
+            <input
               style={{
-                height: 55,
-                width: 600,
-                borderRadius: 20,
+                height: 30,
                 fontSize: 18,
                 border: "none",
+                padding: 10,
+                backgroundColor: "transparent",
               }}
-              onClick={addTodo}
+              placeholder="Title"
+              value={currentTitle}
+              onChange={(e) => setCurrentTitle(e.target.value)}
+            />
+            <textarea
+              style={{
+                height: 60,
+                fontSize: 18,
+                border: "none",
+                padding: 10,
+                backgroundColor: "transparent",
+              }}
+              placeholder="Take a note...."
+              value={currentContent}
+              onChange={(e) => setCurrentContent(e.target.value)}
+            />
+          </div>
+          <div>
+            <button
+              style={{
+                width: 150,
+                height: 40,
+                fontSize: 18,
+                borderRadius: 10,
+                border: "none",
+              }}
+              onClick={() => {
+                isEdited ? editNote() : addvalue();
+              }}
             >
-              <p>Take a Note </p>
-              {showInput ? "Hide Input" : "Show Input"}
+              {isEdited ? "Edit" : "Add"}
             </button>
           </div>
+        </Modal>
+      </section>
+      <section>
+        {allNotes.map((item) => (
+          <div
+            key={item.id}
+            style={{
+              border: "1px solid black",
+              borderRadius: 10,
 
-          {/* allNotes mapping with edit and delete functionality */}
-          {allNotes.map((note) => {
-            return (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  width: 600,
-                  height: 400,
-
-                  border: "2px solid green",
-                }}
-                key={note.id}
-              >
-                {note.id === editTitleId ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <input
-                      type="text"
-                      onKeyUp={(e) => {
-                        if (e.key === "Enter") {
-                          updateTitle();
-                        }
-                      }}
-                      value={editTitle}
-                      onChange={handleEditTitleChange}
-                    />
-                    <input
-                      type="text"
-                      value={editContent}
-                      onChange={handleEditContentChange}
-                      style={{ width: "500px" }}
-                      onKeyUp={(e) => {
-                        if (e.key === "Enter") {
-                          updateTitle();
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div style={{ border: "2px solid black", width: 600 }}>
-                    <p
-                      style={{
-                        width: 600,
-                        height: 50,
-                        border: "2px solid red",
-                      }}
-                      onClick={() => handleClick(note.id)}
-                    >
-                      {note.title}
-                    </p>
-                    <p
-                      style={{
-                        height: 200,
-                        width: 600,
-                        border: "2px solid red",
-                        fontSize: 18,
-                      }}
-                    >
-                      {note.contant}
-                    </p>
-                  </div>
-                )}
-                <div
-                  style={{
-                    display: "flex",
-                    border: "2px solid black",
-                    width: "full",
-                  }}
-                >
-                  <button
-                    style={{ width: 100 }}
-                    onClick={() => deleteTodo(note.id)}
-                  >
-                    delete
-                  </button>
-                  <button
-                    style={{ width: 100 }}
-                    onClick={() => editTodo(note.id, note.title, note.content)}
-                  >
-                    Edit
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-      )}
+              margin: 20,
+              width: 200,
+              height: "auto",
+              padding: 20,
+            }}
+          >
+            <div style={{ borderBottom: "1px solid black" }}>
+              <p style={{ fontSize: 18, fontWeight: "bold" }}>{item.title}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: 15, wordWrap: "break-word" }}>
+                {item.content}
+              </p>
+            </div>
+            <div>
+              <button onClick={() => deleteNote(item.id)}>delete</button>
+            </div>
+            <div>
+              <button onClick={() => editRequested(item.id)}>Edit</button>
+            </div>
+          </div>
+        ))}
+      </section>
     </main>
   );
 }
