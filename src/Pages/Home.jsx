@@ -13,7 +13,7 @@ const customStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
-    backgroundColor: "#d2d4d6",
+    backgroundColor: "#e5e7eb",
     borderRadius: "0.625rem",
     width: "80%",
     maxWidth: "600px",
@@ -148,11 +148,11 @@ function Home() {
     <main className="font-poppins p-4">
       <div className="flex flex-col md:flex-row items-center border-b border-gray-500 my-5 pb-5">
         <div className="w-full md:w-1/4 text-center md:text-left">
-          <p className="text-2xl font-bold">Keeps Notes</p>
+          <p className="text-2xl font-bold">Keep Notes</p>
         </div>
         <div className="w-full md:w-3/4 mt-4 md:mt-0 text-center">
           <input
-            className="w-full md:w-3/4 h-12 text-lg pl-4 rounded bg-gray-300 text-black cursor-pointer"
+            className="w-full md:w-3/4 h-12 text-lg pl-4 rounded bg-gray-100 text-black cursor-pointer"
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search"
           />
@@ -160,7 +160,7 @@ function Home() {
       </div>
       <div className="flex justify-center mt-12">
         <button
-          className="p-5 text-lg w-3/4 md:w-1/2 rounded bg-gray-300"
+          className="p-5 text-lg w-3/4 md:w-1/2 rounded bg-gray-200"
           onClick={createNote}
         >
           Take a Note....
@@ -187,9 +187,9 @@ function Home() {
               onChange={(e) => setCurrentContent(e.target.value)}
             />
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center ">
             <button
-              className="w-36 h-10 text-lg rounded border border-black bg-transparent"
+              className="w-full h-10 text-lg rounded border border-black bg-transparent"
               onClick={isEdited ? editNote : addValue}
             >
               {isEdited ? "Edit" : "Add"}
@@ -214,7 +214,7 @@ function Home() {
 
             <div className="flex justify-between gap-2 mt-4">
               <button
-                className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-300"
+                className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   deleteNote(item.id);
@@ -223,7 +223,7 @@ function Home() {
                 <AiOutlineDelete />
               </button>
               <button
-                className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-300"
+                className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-200"
                 onClick={() => {
                   editRequested(item.id);
                 }}
@@ -249,8 +249,8 @@ function Home() {
               key={number + 1}
               className={`mx-1 px-3 py-1 rounded ${
                 currentPage === number + 1
-                  ? "bg-gray-700 text-white"
-                  : "bg-gray-300"
+                  ? "bg-gray-300 text-black"
+                  : "bg-gray-100"
               }`}
               onClick={() => paginate(number + 1)}
             >
