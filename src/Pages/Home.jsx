@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import Modal from "react-modal";
+import dayjs from "dayjs";
 import { v4 as uuidv4 } from "uuid";
 import { AiOutlineDelete } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
 
 const customStyles = {
   content: {
-    top: "30%",
+    top: "36%",
     left: "50%",
     right: "auto",
     bottom: "auto",
@@ -28,6 +29,9 @@ function Home() {
   const [isEdited, setIsEdited] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [foundedDataList, setFoundDataList] = useState([]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const notesPerPage = 10;
 
   useEffect(() => {
     const retrievedArrayString = localStorage.getItem("data");
@@ -105,6 +109,7 @@ function Home() {
     setCurrentContent("");
     setIsEdited(false);
     setNotesEditId("");
+    setShowDate(false);
   };
 
   const openNote = (item) => {
@@ -113,6 +118,7 @@ function Home() {
     setNotesEditId(item.id);
     setShowAddModal(true);
     setIsEdited(true);
+    setShowDate(true);
   };
 
   const findingValue = () => {
@@ -127,6 +133,18 @@ function Home() {
   useEffect(() => {
     findingValue();
   }, [searchValue]);
+
+  const indexOfLastNote = currentPage * notesPerPage;
+  const indexOfFirstNote = indexOfLastNote - notesPerPage;
+
+  const currentNotes = (searchValue ? foundedDataList : allNotes).slice(
+    indexOfFirstNote,
+    indexOfLastNote
+  );
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  console.log([...Array(Math.ceil(allNotes.length / notesPerPage)).keys()]);
 
   return (
     <main className="font-poppins p-4">
@@ -150,6 +168,7 @@ function Home() {
           Take a Note....
         </button>
       </div>
+
       <section>
         <Modal
           isOpen={showAddModal}
@@ -181,7 +200,7 @@ function Home() {
         </Modal>
       </section>
       <section className="flex flex-wrap justify-center">
-        {(searchValue ? foundedDataList : allNotes).map((item) => (
+        {currentNotes.map((item) => (
           <div
             key={item.id}
             className="border border-black rounded m-4 w-full md:w-1/4 p-5 cursor-pointer"
@@ -190,26 +209,52 @@ function Home() {
             <div className="border-b border-black mb-4">
               <p className="text-lg font-bold">{item.title}</p>
             </div>
+
             <div>
               <p className="text-sm break-words">{item.content}</p>
             </div>
+
             <div className="flex justify-between gap-2 mt-4">
               <button
                 className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-300"
-                onClick={() => deleteNote(item.id)}
+                onClick={() => {
+                  deleteNote(item.id);
+                }}
               >
                 <AiOutlineDelete />
               </button>
               <button
                 className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-300"
-                onClick={() => editRequested(item.id)}
+                onClick={() => {
+                  editRequested(item.id);
+                }}
               >
                 <MdOutlineEdit />
               </button>
             </div>
+            <div className="pt-5 flex justify-end">
+              <p>Edited {dayjs(item.Createdate).format("MMM , YY ")}</p>
+            </div>
           </div>
         ))}
       </section>
+      <div className="flex justify-center mt-4">
+        {[...Array(Math.ceil(allNotes.length / notesPerPage)).keys()].map(
+          (number) => (
+            <button
+              key={number + 1}
+              className={`mx-1 px-3 py-1 rounded ${
+                currentPage === number + 1
+                  ? "bg-gray-700 text-white"
+                  : "bg-gray-300"
+              }`}
+              onClick={() => paginate(number + 1)}
+            >
+              {number + 1}
+            </button>
+          )
+        )}
+      </div>
     </main>
   );
 }
