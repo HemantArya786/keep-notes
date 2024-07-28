@@ -232,8 +232,13 @@ function Home() {
                 <MdOutlineEdit />
               </button>
             </div>
-            <div className="pt-5 flex justify-end">
-              <p>Edited {dayjs(item.Createdate).format("MMM , YY ")}</p>
+            <div className="pt-5 flex flex-col items-end ">
+              <p className="text-sm font-light">
+                Edited : {dayjs(item.Createdate).format("MMM D, YY ")}
+              </p>
+              <p className="text-xs font-extralight">
+                {dayjs(item.Createdate).format("H:m a")}
+              </p>
             </div>
           </div>
         ))}
