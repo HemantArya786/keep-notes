@@ -45,6 +45,12 @@ function Home() {
   }, []);
 
   const addValue = () => {
+    if (currentTitle === "") {
+      alert("Don't let the title empty");
+
+      return;
+    }
+
     const newNotes = {
       id: uuidv4(),
       title: currentTitle,
@@ -82,6 +88,11 @@ function Home() {
   };
 
   const editNote = () => {
+    if (currentTitle === "") {
+      alert("Don't let the title empty");
+
+      return;
+    }
     const updateNote = {
       title: currentTitle,
       content: currentContent,
