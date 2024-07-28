@@ -109,7 +109,6 @@ function Home() {
     setCurrentContent("");
     setIsEdited(false);
     setNotesEditId("");
-    setShowDate(false);
   };
 
   const openNote = (item) => {
@@ -118,7 +117,6 @@ function Home() {
     setNotesEditId(item.id);
     setShowAddModal(true);
     setIsEdited(true);
-    setShowDate(true);
   };
 
   const findingValue = () => {
@@ -217,7 +215,8 @@ function Home() {
             <div className="flex justify-between gap-2 mt-4">
               <button
                 className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-300"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   deleteNote(item.id);
                 }}
               >
