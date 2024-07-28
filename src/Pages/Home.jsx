@@ -1,19 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "react-modal";
 import { v4 as uuidv4 } from "uuid";
+import { AiOutlineDelete } from "react-icons/ai";
+import { MdOutlineEdit } from "react-icons/md";
 
 const customStyles = {
   content: {
-    top: "35%",
+    top: "30%",
     left: "50%",
     right: "auto",
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
     backgroundColor: "#d2d4d6",
-    borderRadius: 10,
+    borderRadius: "0.625rem",
+    width: "80%",
+    maxWidth: "600px",
   },
 };
+
 function Home() {
   const [allNotes, setAllNotes] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -21,22 +26,35 @@ function Home() {
   const [currentTitle, setCurrentTitle] = useState("");
   const [currentContent, setCurrentContent] = useState("");
   const [isEdited, setIsEdited] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [foundedDataList, setFoundDataList] = useState([]);
 
-  console.log(allNotes);
+  useEffect(() => {
+    const retrievedArrayString = localStorage.getItem("data");
+    const localAllNotes = retrievedArrayString
+      ? JSON.parse(retrievedArrayString)
+      : [];
 
-  const addvalue = () => {
-    let newNotes = {
+    if (localAllNotes.length > 0) {
+      setAllNotes(localAllNotes);
+    }
+  }, []);
+
+  const addValue = () => {
+    const newNotes = {
       id: uuidv4(),
       title: currentTitle,
       content: currentContent,
       createDate: new Date(),
     };
 
+    const updatedNotes = [newNotes, ...allNotes];
+
     setCurrentContent("");
     setCurrentTitle("");
+    setAllNotes(updatedNotes);
 
-    setAllNotes([newNotes, ...allNotes]);
-    localStorage.setItem("data", JSON.stringify(allNotes));
+    localStorage.setItem("data", JSON.stringify(updatedNotes));
     setShowAddModal(false);
   };
 
@@ -45,16 +63,13 @@ function Home() {
   };
 
   const deleteNote = (id) => {
-    let afterDeleteNotesList = allNotes.filter((item) => item.id !== id);
-
+    const afterDeleteNotesList = allNotes.filter((item) => item.id !== id);
     setAllNotes(afterDeleteNotesList);
-
-    console.log(afterDeleteNotesList);
+    localStorage.setItem("data", JSON.stringify(afterDeleteNotesList));
   };
 
   const editRequested = (id) => {
-    let foundedNotes = allNotes.find((item) => item.id === id);
-    console.log(foundedNotes, "update");
+    const foundedNotes = allNotes.find((item) => item.id === id);
     setCurrentContent(foundedNotes.content);
     setCurrentTitle(foundedNotes.title);
     setNotesEditId(foundedNotes.id);
@@ -63,158 +78,134 @@ function Home() {
   };
 
   const editNote = () => {
-    let updateNote = {
+    const updateNote = {
       title: currentTitle,
       content: currentContent,
       modifiedDate: new Date(),
       id: notesEditId,
     };
 
-    let modifiedNote = allNotes.map((item) => {
-      if (item.id === notesEditId) {
-        item = updateNote;
-      }
-      return item;
-    });
+    const modifiedNotes = allNotes.map((item) =>
+      item.id === notesEditId ? updateNote : item
+    );
 
-    setAllNotes(modifiedNote);
-    setIsEdited("");
+    setAllNotes(modifiedNotes);
+
+    setIsEdited(false);
     setCurrentTitle("");
     setCurrentContent("");
     setShowAddModal(false);
+
+    localStorage.setItem("data", JSON.stringify(modifiedNotes));
   };
 
+  const closeModal = () => {
+    setShowAddModal(false);
+    setCurrentTitle("");
+    setCurrentContent("");
+    setIsEdited(false);
+    setNotesEditId("");
+  };
+
+  const openNote = (item) => {
+    setCurrentContent(item.content);
+    setCurrentTitle(item.title);
+    setNotesEditId(item.id);
+    setShowAddModal(true);
+    setIsEdited(true);
+  };
+
+  const findingValue = () => {
+    const foundValue = allNotes.filter(
+      (item) =>
+        item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+        item.content.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setFoundDataList(foundValue);
+  };
+
+  useEffect(() => {
+    findingValue();
+  }, [searchValue]);
+
   return (
-    <main style={{ fontFamily: "poppins" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid grey",
-        }}
-      >
-        <div style={{ width: "20%" }}>
-          <h1>Keeps Notes</h1>
+    <main className="font-poppins p-4">
+      <div className="flex flex-col md:flex-row items-center border-b border-gray-500 my-5 pb-5">
+        <div className="w-full md:w-1/4 text-center md:text-left">
+          <p className="text-2xl font-bold">Keeps Notes</p>
         </div>
-        <div style={{ width: "80%" }}>
+        <div className="w-full md:w-3/4 mt-4 md:mt-0 text-center">
           <input
-            style={{
-              width: 800,
-              height: 40,
-              fontSize: 28,
-              borderRadius: 10,
-              border: "none",
-              color: "black",
-              backgroundColor: "#d2d4d6",
-            }}
-            placeholder="   search"
+            className="w-full md:w-3/4 h-12 text-lg pl-4 rounded bg-gray-300 text-black cursor-pointer"
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder="Search"
           />
         </div>
       </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: 50,
-        }}
-      >
+      <div className="flex justify-center mt-12">
         <button
-          style={{
-            padding: 20,
-            border: "none",
-            fontSize: 18,
-            width: 500,
-            borderRadius: 10,
-            backgroundColor: "#d2d4d6",
-          }}
-          onClick={() => createNote()}
+          className="p-5 text-lg w-3/4 md:w-1/2 rounded bg-gray-300"
+          onClick={createNote}
         >
           Take a Note....
         </button>
       </div>
-      <section style={{}}>
+      <section>
         <Modal
           isOpen={showAddModal}
-          onRequestClose={() => setShowAddModal(false)}
+          onRequestClose={closeModal}
           style={customStyles}
         >
-          <div
-            style={{
-              width: "600px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+          <div className="w-full flex flex-col">
             <input
-              style={{
-                height: 30,
-                fontSize: 18,
-                border: "none",
-                padding: 10,
-                backgroundColor: "transparent",
-              }}
+              className="h-10 text-lg border-none p-5 bg-transparent"
               placeholder="Title"
               value={currentTitle}
               onChange={(e) => setCurrentTitle(e.target.value)}
             />
             <textarea
-              style={{
-                height: 60,
-                fontSize: 18,
-                border: "none",
-                padding: 10,
-                backgroundColor: "transparent",
-              }}
+              className="h-20 text-lg border-none p-5 mb-4 bg-transparent"
               placeholder="Take a note...."
               value={currentContent}
               onChange={(e) => setCurrentContent(e.target.value)}
             />
           </div>
-          <div>
+          <div className="flex justify-center">
             <button
-              style={{
-                width: 150,
-                height: 40,
-                fontSize: 18,
-                borderRadius: 10,
-                border: "none",
-              }}
-              onClick={() => {
-                isEdited ? editNote() : addvalue();
-              }}
+              className="w-36 h-10 text-lg rounded border border-black bg-transparent"
+              onClick={isEdited ? editNote : addValue}
             >
               {isEdited ? "Edit" : "Add"}
             </button>
           </div>
         </Modal>
       </section>
-      <section>
-        {allNotes.map((item) => (
+      <section className="flex flex-wrap justify-center">
+        {(searchValue ? foundedDataList : allNotes).map((item) => (
           <div
             key={item.id}
-            style={{
-              border: "1px solid black",
-              borderRadius: 10,
-
-              margin: 20,
-              width: 200,
-              height: "auto",
-              padding: 20,
-            }}
+            className="border border-black rounded m-4 w-full md:w-1/4 p-5 cursor-pointer"
+            onClick={() => openNote(item)}
           >
-            <div style={{ borderBottom: "1px solid black" }}>
-              <p style={{ fontSize: 18, fontWeight: "bold" }}>{item.title}</p>
+            <div className="border-b border-black mb-4">
+              <p className="text-lg font-bold">{item.title}</p>
             </div>
             <div>
-              <p style={{ fontSize: 15, wordWrap: "break-word" }}>
-                {item.content}
-              </p>
+              <p className="text-sm break-words">{item.content}</p>
             </div>
-            <div>
-              <button onClick={() => deleteNote(item.id)}>delete</button>
-            </div>
-            <div>
-              <button onClick={() => editRequested(item.id)}>Edit</button>
+            <div className="flex justify-between gap-2 mt-4">
+              <button
+                className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-300"
+                onClick={() => deleteNote(item.id)}
+              >
+                <AiOutlineDelete />
+              </button>
+              <button
+                className="flex items-center justify-center w-1/2 h-10 text-lg rounded bg-gray-300"
+                onClick={() => editRequested(item.id)}
+              >
+                <MdOutlineEdit />
+              </button>
             </div>
           </div>
         ))}
